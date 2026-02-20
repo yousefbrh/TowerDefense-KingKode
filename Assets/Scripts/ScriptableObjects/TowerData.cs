@@ -2,26 +2,24 @@ using UnityEngine;
 
 namespace ScriptableObjects
 {
-    [CreateAssetMenu(fileName = "NewTowerData", menuName = "TowerDefense/TowerData")]
+    [CreateAssetMenu(fileName = "NewTowerData", menuName = "TowerDefense/Tower Data")]
     public class TowerData : ScriptableObject
     {
-        [Header("Identity")]
+        [Header("General")]
         public string towerName = "Basic Tower";
         public Sprite icon;
-
-        [Header("Stats")]
-        public float damage = 10f;
-        public float range = 5f;
-        public float fireRate = 1f;
+        public GameObject prefab;
         public int cost = 100;
 
-        [Header("Upgrade")]
-        public float upgradeDamageBonus = 5f;
-        public float upgradeRangeBonus = 1f;
-        public int   upgradeCost = 75;
+        [Header("Stats")]
+        public float range = 5f;
+        public float fireRate = 1f;
 
-        [Header("Prefabs")]
-        public GameObject towerPrefab;
-        public GameObject projectilePrefab;
+        [Header("Projectile")]
+        public ProjectileData projectileData;
+
+        [Header("Upgrade")]
+        public TowerData upgradedVersion;
+        public int upgradeCost = 150;
     }
 }

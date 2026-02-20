@@ -1,0 +1,18 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bb59bd3d2f8b4985a92ee015312607bf, type: 3}
+  m_Name: NewProjectileData
+  m_EditorClassIdentifier: Assembly-CSharp::ScriptableObjects.ProjectileData
+  projectileName: Basic Bullet
+  prefab: {fileID: 2643175189820394770, guid: 57c001934f42947459fae7c05676a52c, type: 3}
+  speed: 15
+  damage: 10

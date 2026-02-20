@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ee2466692ee4497bb193d8202f835d12, type: 3}
+  m_Name: Enemy 1
+  m_EditorClassIdentifier: Assembly-CSharp::ScriptableObjects.EnemyData
+  enemyName: Enemy 1
+  prefab: {fileID: 7929544295959358727, guid: 329929803ad334e70a9c5a0bc995c731, type: 3}
+  maxHealth: 50
+  moveSpeed: 3
+  reward: 25
+  damage: 1
