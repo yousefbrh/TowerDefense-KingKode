@@ -13,12 +13,11 @@ MonoBehaviour:
   m_Name: TowerData 1
   m_EditorClassIdentifier: Assembly-CSharp::TowerData
   towerName: Tower 1
-  icon: {fileID: 0}
-  prefab: {fileID: 426541463590886499, guid: 071fa2e9ce69245d2ab7353bbd560881, type: 3}
+  icon: {fileID: 21300000, guid: 9104d6a5824bb4a15ac301b8cd2ae72c, type: 3}
+  prefab: {fileID: 646443152923270953, guid: 625176623ae43480984298e3c5964cd0, type: 3}
   cost: 100
-  range: 3
+  range: 4
   fireRate: 1
-  damage: 10
   projectileData: {fileID: 11400000, guid: 96ba9e42b241146c9a167ddc89b42b6c, type: 2}
   upgradedVersion: {fileID: 11400000, guid: ea04d10b0696f423181f490a88548ac1, type: 2}
   upgradeCost: 150

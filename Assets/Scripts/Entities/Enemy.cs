@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using Components;
 using Managers;
@@ -11,6 +12,7 @@ namespace Entities
     public class Enemy : MonoBehaviour
     {
         [SerializeField] private GameObject healthBarPrefab;
+        [SerializeField] private ParticleSystem deathParticle;
         private float _currentHealth;
         private int _waypointIndex;
         private List<Transform> _waypoints = new List<Transform>();
@@ -45,11 +47,16 @@ namespace Entities
         private void MoveAlongPath()
         {
             var target = _waypoints[_waypointIndex];
+            if (!target)
+            {
+                ObjectPool.Instance.ReturnToPool(Data.enemyName, gameObject);
+                return;
+            }
             var dir = (target.position - transform.position).normalized;
             transform.position += dir * (Data.moveSpeed * Time.deltaTime);
 
-            if (dir != Vector3.zero)
-                transform.rotation = Quaternion.LookRotation(dir);
+            // if (dir != Vector3.zero)
+            //     transform.rotation = Quaternion.LookRotation(dir);
 
             var distanceSq = (transform.position - target.position).sqrMagnitude;
             if (distanceSq < 0.04f)
@@ -70,9 +77,17 @@ namespace Entities
         }
 
         private void Die()
-        {
+        { 
+            PlayDeathParticle();
             OnDied?.Invoke(this);
             ReturnToPool();
+        }
+
+        private void PlayDeathParticle()
+        {
+            var clone = Instantiate(deathParticle, transform.position, Quaternion.identity);
+            clone.Play();
+            Destroy(clone.gameObject, deathParticle.main.duration);
         }
 
         private void ReachGoal()

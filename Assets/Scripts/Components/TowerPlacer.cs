@@ -1,6 +1,7 @@
 using Entities;
 using Managers;
 using ScriptableObjects;
+using UI;
 using UnityEngine;
 
 namespace Components
@@ -34,21 +35,22 @@ namespace Components
             _isPlacing = true;
         }
 
-        public void CancelPlacement()
+        private void CancelPlacement()
         {
             _selectedTowerData = null;
             _isPlacing = false;
+            HUD.Instance.DeSelectAllTowerButtons();
         }
 
         private void Update()
         {
-            if (!_isPlacing || _selectedTowerData == null) return;
+            if (!_isPlacing || !_selectedTowerData) return;
             if (GameManager.Instance.IsGameOver) { CancelPlacement(); return; }
 
-            Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
+            var ray = mainCamera.ScreenPointToRay(Input.mousePosition);
             if (Physics.Raycast(ray, out RaycastHit hit, 200f, groundLayer))
             {
-                bool valid = GridManager.Instance.CanPlaceTower(hit.point);
+                var valid = GridManager.Instance.CanPlaceTower(hit.point);
 
                 if (Input.GetMouseButtonDown(0) && valid)
                     PlaceTower(hit.point);
@@ -57,18 +59,28 @@ namespace Components
             if (Input.GetMouseButtonDown(1)) CancelPlacement();
         }
 
-        private void PlaceTower(Vector3 hitPoint)
+        private void PlaceTower(Vector3 hitPoint, bool isUpgrade = false)
         {
-            if (!GameManager.Instance.CanAfford(_selectedTowerData.cost)) return;
+            if (!isUpgrade)
+            {
+                if (!GameManager.Instance.CanAfford(_selectedTowerData.cost)) return;
+                GridManager.Instance.PlaceTower(hitPoint);
+                GameManager.Instance.SpendMoney(_selectedTowerData.cost);
+            }
 
-            Vector3 snapped = GridManager.Instance.SnapToGrid(hitPoint);
-            GameObject tower = Instantiate(_selectedTowerData.prefab, snapped, Quaternion.identity);
+            var snapped = GridManager.Instance.SnapToGrid(hitPoint);
+            var tower = Instantiate(_selectedTowerData.prefab, snapped, Quaternion.identity);
             tower.GetComponent<Tower>()?.Initialize(_selectedTowerData);
-
-            GridManager.Instance.PlaceTower(hitPoint);
-            GameManager.Instance.SpendMoney(_selectedTowerData.cost);
-
+            
             CancelPlacement();
+        }
+
+        public void UpdateTower(Tower tower)
+        {
+            var data = tower.Data;
+            _selectedTowerData = data.upgradedVersion;
+            PlaceTower(tower.transform.position, true);
+            Destroy(tower.gameObject);
         }
     }
 }

@@ -10,9 +10,9 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: bb59bd3d2f8b4985a92ee015312607bf, type: 3}
-  m_Name: NewProjectileData
+  m_Name: ProjectileData 3
   m_EditorClassIdentifier: Assembly-CSharp::ScriptableObjects.ProjectileData
-  projectileName: Basic Bullet
-  prefab: {fileID: 2643175189820394770, guid: 57c001934f42947459fae7c05676a52c, type: 3}
-  speed: 15
-  damage: 10
+  projectileName: Projectile 3
+  prefab: {fileID: 8067281528989190952, guid: d27dafdf782df45c495ff12434903df8, type: 3}
+  speed: 25
+  damage: 20

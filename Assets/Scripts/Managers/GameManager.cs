@@ -1,5 +1,9 @@
+using System.Collections.Generic;
+using ScriptableObjects;
+using UI;
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.SceneManagement;
 using UnityEngine.Serialization;
 
 namespace Managers
@@ -11,6 +15,9 @@ namespace Managers
         [Header("Starting Values")]
         [SerializeField] private int startingMoney = 300;
         [SerializeField] private int startingLives = 20;
+        
+        [Header("Tower Data")]
+        [SerializeField] private List<TowerData> towersData = new List<TowerData>();
 
         public int Money { get; private set; }
         public int Lives { get; private set; }
@@ -32,6 +39,19 @@ namespace Managers
             Lives = startingLives;
             onMoneyChanged.Invoke(Money);
             onLivesChanged.Invoke(Lives);
+            HUD.Instance.InitTowerButtons(towersData);
+            HUD.Instance.OnTryAgainClicked += TryAgainClicked;
+            HUD.Instance.OnNextLevelClicked += NextLevelClicked;
+        }
+
+        private void TryAgainClicked()
+        {
+            SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+        }
+        
+        private void NextLevelClicked()
+        {
+            SceneManager.LoadScene(SceneManager.GetActiveScene().name);
         }
 
         public bool CanAfford(int amount) => Money >= amount && !IsGameOver;

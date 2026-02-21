@@ -1,4 +1,7 @@
+using System;
+using System.Collections.Generic;
 using Managers;
+using ScriptableObjects;
 using TMPro;
 using UnityEngine;
 
@@ -9,8 +12,23 @@ namespace UI
         [SerializeField] private TextMeshProUGUI moneyText;
         [SerializeField] private TextMeshProUGUI livesText;
         [SerializeField] private TextMeshProUGUI waveText;
-        [SerializeField] private GameObject gameOverPanel;
-        [SerializeField] private GameObject victoryPanel;
+        [SerializeField] private TowerButtonHandler towerButtonHandler;
+        [SerializeField] private LosePanel losePanel;
+        [SerializeField] private VictoryPanel victoryPanel;
+        
+        public event Action OnTryAgainClicked;
+        public event Action OnNextLevelClicked;
+
+        public static HUD Instance;
+        private void Awake()
+        {
+            if (Instance == null)
+                Instance = this;
+            else
+            {
+                Destroy(gameObject);
+            }
+        }
 
         private void Start()
         {
@@ -21,12 +39,36 @@ namespace UI
             WaveManager.Instance.onWaveStarted.AddListener(UpdateWave);
             WaveManager.Instance.onAllWavesDone.AddListener(ShowVictory);
 
-            if (gameOverPanel != null) gameOverPanel.SetActive(false);
-            if (victoryPanel  != null) victoryPanel.SetActive(false);
+            if (losePanel != null)
+            {
+                losePanel.OnTryAgainClicked += TryAgainClicked;
+                losePanel.gameObject.SetActive(false);
+            }
+
+            if (victoryPanel != null)
+            {
+                victoryPanel.OnNextLevelClicked += NextLevelClicked;
+                victoryPanel.gameObject.SetActive(false);
+            }
 
             UpdateMoney(GameManager.Instance.Money);
             UpdateLives(GameManager.Instance.Lives);
             UpdateWave(1);
+        }
+        
+        private void NextLevelClicked()
+        {
+            OnNextLevelClicked?.Invoke();
+        }
+
+        private void TryAgainClicked()
+        {
+            OnTryAgainClicked?.Invoke();
+        }
+
+        public void InitTowerButtons(List<TowerData> towersData)
+        {
+            towerButtonHandler.InitTowerButtons(towersData);
         }
 
         private void UpdateMoney(int amount)
@@ -46,12 +88,17 @@ namespace UI
 
         private void ShowGameOver()
         {
-            if (gameOverPanel != null) gameOverPanel.SetActive(true);
+            if (losePanel != null) losePanel.gameObject.SetActive(true);
         }
 
         private void ShowVictory()
         {
-            if (victoryPanel != null) victoryPanel.SetActive(true);
+            if (victoryPanel != null) victoryPanel.gameObject.SetActive(true);
+        }
+
+        public void DeSelectAllTowerButtons()
+        {
+            towerButtonHandler.DeselectAllTowerButtons();
         }
     }
 }

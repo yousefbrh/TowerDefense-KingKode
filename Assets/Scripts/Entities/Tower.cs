@@ -1,7 +1,9 @@
+using System.Collections;
 using Components;
 using Managers;
 using ScriptableObjects;
 using UnityEngine;
+using UnityEngine.XR;
 
 namespace Entities
 {
@@ -14,20 +16,39 @@ namespace Entities
         [SerializeField] private ParticleSystem muzzleFlash;
         [SerializeField] private TriggerInvoker detector;
         [SerializeField] private SphereCollider detectorCollider;
+        [SerializeField] private ParticleSystem createParticle;
 
         private float _fireCooldown;
         private Enemy _currentTarget;
         private bool _isOccupied;
+        private bool _passedFromUpgradeCoolDown;
 
         public void Initialize(TowerData data)
         {
             Data = data;
             _isOccupied = false;
             detector.OnTriggerEnterInvoked += EnemyDetected;
+            detector.OnTriggerStayInvoked += EnemyStayInArea;
             detector.OnTriggerExitInvoked += EnemyOffTheRadar;
             detectorCollider.radius = data.range;
+            StartCoroutine(HandleUpgradeCoolDown());
+            HandleParticle();
         }
-        
+
+        private void HandleParticle()
+        {
+            var particle = Instantiate(createParticle, transform.position, Quaternion.identity);
+            particle.transform.localScale = Vector3.one * 2;
+            particle.Play();
+            Destroy(particle, particle.main.duration);
+        }
+
+        private IEnumerator HandleUpgradeCoolDown()
+        {
+            yield return new WaitForSeconds(0.5f);
+            _passedFromUpgradeCoolDown = true;
+        }
+
         private void EnemyDetected(Collider obj)
         {
             if (_isOccupied) return;
@@ -35,6 +56,17 @@ namespace Entities
             if (targetEnemy == null) return;
             _currentTarget = targetEnemy;
             _currentTarget.OnDied += CurrentTargetDied;
+            _isOccupied = true;
+        }
+        
+        private void EnemyStayInArea(Collider obj)
+        {
+            if (_isOccupied) return;
+            var targetEnemy = obj.GetComponent<Enemy>();
+            if (targetEnemy == null) return;
+            _currentTarget = targetEnemy;
+            _currentTarget.OnDied += CurrentTargetDied;
+            _isOccupied = true;
         }
         
         private void EnemyOffTheRadar(Collider obj)
@@ -43,6 +75,7 @@ namespace Entities
             if (targetEnemy == null) return;
             targetEnemy.OnDied -= CurrentTargetDied;
             _currentTarget = null;
+            _isOccupied = false;
         }
         
         private void CurrentTargetDied(Enemy enemy)
@@ -82,7 +115,7 @@ namespace Entities
 
             var spawnPos = firePoint ? firePoint.position : transform.position + Vector3.up;
 
-            // muzzleFlash?.Play();
+            muzzleFlash?.Play();
 
             var proj = ObjectPool.Instance.Spawn(Data.projectileData.projectileName, spawnPos, Quaternion.identity);
             if (!proj) return;
@@ -91,14 +124,14 @@ namespace Entities
             projectile?.Initialize(Data.projectileData, _currentTarget);
         }
 
-        public bool CanUpgrade() => Data.upgradedVersion != null
-                                    && GameManager.Instance.CanAfford(Data.upgradeCost);
+        public bool CanUpgrade() => Data.upgradedVersion != null;
+        public bool CanShowUpgradePanel() => _passedFromUpgradeCoolDown;
 
         public void Upgrade()
         {
             if (!CanUpgrade()) return;
             GameManager.Instance.SpendMoney(Data.upgradeCost);
-            Initialize(Data.upgradedVersion);
+            TowerPlacer.Instance.UpdateTower(this);
         }
 
         private void OnDrawGizmosSelected()

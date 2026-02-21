@@ -1,3 +1,4 @@
+using System;
 using Components;
 using Managers;
 using ScriptableObjects;
@@ -9,20 +10,26 @@ namespace UI
 {
     public class TowerButton : MonoBehaviour
     {
-        [SerializeField] private TowerData towerData;
         [SerializeField] private Image iconImage;
+        [SerializeField] private Image stateImage;
+        [SerializeField] private Image selectedImage;
         [SerializeField] private TextMeshProUGUI costText;
         [SerializeField] private Button button;
 
-        private void Start()
+        private TowerData _towerData;
+        
+        public event Action OnButtonClicked;
+
+        public void Initialize(TowerData towerData)
         {
             if (towerData == null) return;
 
-            if (iconImage != null && towerData.icon != null)
-                iconImage.sprite = towerData.icon;
+            _towerData = towerData;
+            if (iconImage != null && _towerData.icon != null)
+                iconImage.sprite = _towerData.icon;
 
             if (costText != null)
-                costText.text = $"${towerData.cost}";
+                costText.text = $"${_towerData.cost}";
 
             if (button != null)
                 button.onClick.AddListener(OnClick);
@@ -33,17 +40,29 @@ namespace UI
 
         private void UpdateButtonState(int money)
         {
-            if (button != null)
-                button.interactable = money >= towerData.cost && !GameManager.Instance.IsGameOver;
+            if (button == null) return;
+            var canBuy = money >= _towerData.cost && !GameManager.Instance.IsGameOver;
+            button.interactable = canBuy;
+            stateImage.color = canBuy ? Color.green : Color.red;
         }
 
         private void OnClick()
         {
-            TowerPlacer.Instance.SelectTower(towerData);
+            OnButtonClicked?.Invoke();
+            var color = selectedImage.color;
+            selectedImage.color = new Color(color.r, color.g, color.b, 1f);
+            TowerPlacer.Instance.SelectTower(_towerData);
+        }
+        
+        public void DeSelect()
+        {
+            var color = selectedImage.color;
+            selectedImage.color = new Color(color.r, color.g, color.b, 0f);
         }
 
         private void OnDestroy()
         {
+            OnButtonClicked = null;
             if (GameManager.Instance != null)
                 GameManager.Instance.onMoneyChanged.RemoveListener(UpdateButtonState);
         }

@@ -21,9 +21,13 @@ namespace Components
 
         private void Awake()
         {
-            if (Instance != null && Instance != this) { Destroy(gameObject); return; }
+            if (Instance != null && Instance != this)
+            {
+                Destroy(gameObject); return;
+            }
             Instance = this;
-
+            DontDestroyOnLoad(this);
+            
             _poolDictionary = new Dictionary<string, Queue<GameObject>>();
             foreach (var pool in pools)
             {

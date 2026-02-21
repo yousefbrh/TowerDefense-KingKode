@@ -8,7 +8,6 @@ namespace Managers
     {
         public static GridManager Instance { get; private set; }
 
-        [SerializeField] private GameObject cellHighlightPrefab;
         [SerializeField] private List<GridSurface> surfaces = new List<GridSurface>();
 
         private void Awake()

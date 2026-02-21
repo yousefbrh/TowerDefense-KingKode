@@ -13,6 +13,7 @@ namespace UI
         [SerializeField] private TextMeshProUGUI upgradeCostText;
         [SerializeField] private Button upgradeButton;
         [SerializeField] private Button sellButton;
+        [SerializeField] private Button exitButton;
         [SerializeField] private TextMeshProUGUI sellAmountText;
         [SerializeField] private LayerMask towerLayer;
         [SerializeField] private Camera mainCamera;
@@ -25,6 +26,7 @@ namespace UI
             panel?.SetActive(false);
             upgradeButton?.onClick.AddListener(OnUpgrade);
             sellButton?.onClick.AddListener(OnSell);
+            exitButton?.onClick.AddListener(OnExit);
         }
 
         private void Update()
@@ -32,14 +34,15 @@ namespace UI
             if (!Input.GetMouseButtonDown(0)) return;
 
             if (UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject()) return;
-
-            if (TowerPlacer.Instance != null) return;
-
+            
             var ray = mainCamera.ScreenPointToRay(Input.mousePosition);
-            if (Physics.Raycast(ray, out RaycastHit hit, 200f, towerLayer))
+            if (Physics.Raycast(ray, out var hit, 200f, towerLayer))
             {
                 var tower = hit.collider.GetComponentInParent<Tower>();
-                if (tower != null) { ShowPanel(tower); return; }
+                if (tower && tower.CanShowUpgradePanel())
+                {
+                    ShowPanel(tower); return;
+                }
             }
 
             HidePanel();
@@ -50,13 +53,21 @@ namespace UI
             _selectedTower = tower;
             panel?.SetActive(true);
 
-            bool canUpgrade = tower.CanUpgrade();
-            if (upgradeButton != null) upgradeButton.interactable = canUpgrade;
-            if (upgradeCostText != null)
-                upgradeCostText.text = canUpgrade ? $"Upgrade ${tower.Data.upgradeCost}" : "Max Level";
+            var canUpgrade = tower.CanUpgrade();
+            var canAfford = GameManager.Instance.CanAfford(tower.Data.upgradeCost);
+            if (upgradeButton) upgradeButton.interactable = canUpgrade && canAfford;
+            if (upgradeCostText)
+            {
+                if (canUpgrade && canAfford)
+                    upgradeCostText.text = $"Upgrade ${tower.Data.upgradeCost}";
+                if (canUpgrade && !canAfford)
+                    upgradeCostText.text = $"Not Enough Money";
+                if (!canUpgrade)
+                    upgradeCostText.text = $"Max Level";
+            }
 
-            int sellValue = Mathf.RoundToInt(tower.Data.cost * 0.6f);
-            if (sellAmountText != null) sellAmountText.text = $"Sell +${sellValue}";
+            var sellValue = Mathf.RoundToInt(tower.Data.cost * 0.6f);
+            if (sellAmountText) sellAmountText.text = $"Sell +${sellValue}";
         }
 
         private void HidePanel()
@@ -68,7 +79,7 @@ namespace UI
         private void OnUpgrade()
         {
             _selectedTower?.Upgrade();
-            if (_selectedTower != null) ShowPanel(_selectedTower); // refresh
+            HidePanel();
         }
 
         private void OnSell()
@@ -78,6 +89,11 @@ namespace UI
             GridManager.Instance.RemoveTower(_selectedTower.transform.position);
             GameManager.Instance.AddMoney(refund);
             Destroy(_selectedTower.gameObject);
+            HidePanel();
+        }
+        
+        private void OnExit()
+        {
             HidePanel();
         }
     }
